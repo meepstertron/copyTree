@@ -1,3 +1,5 @@
+![Banner](https://github.com/meepstertron/copyTree/blob/06518d6a1b43f927ea23be05dd605e8a21b95d8f/copytree-banner.png?raw=true)
+
 # CopyTree
 
 CopyTree is a command-line tool for creating ASCII file trees and replicating file trees using `.ct` files. It allows you to easily visualize and duplicate directory structures.
