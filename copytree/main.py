@@ -35,6 +35,22 @@ def translate_to_pirate(message):
         message = message.replace(key, value)
     return message
 
+def build_tree(obj, path):
+    for key, value in obj.items():
+        if isinstance(value, str):
+            with open(os.path.join(path, key), 'w') as file:
+                file.write(value)
+       
+        if isinstance(value, dict):
+            new_path = os.path.join(path, key)
+            try:
+                os.makedirs(new_path)
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    raise
+            build_tree(value, new_path)
+
+
 def load_config():
     global pirate
     config_path = os.path.expanduser("~") + "/.copytree/config.json"
@@ -148,6 +164,7 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
     parser.add_argument('-e', '--export', nargs='?', const='export.ct', help='Export the structure to a file (default: export.ct)')
     parser.add_argument('-d', '--directory', help='directory to copy')
+    parser.add_argument('-b', '--build', help='Build structure based on CT file')
 
     args = parser.parse_args()
     config_path = os.path.expanduser("~") + "/.copytree/config.json"
@@ -166,12 +183,53 @@ def main():
             log("config file created, setting default values")
             with open(os.path.expanduser("~") + "/.copytree/config.json", 'w') as file:
                 json.dump({"folder-prefix": "/", "sub-file-indicator": "├──", "end-cap-indicator":"└──",}, file, indent=4)
-
+        if args.build:
+            log(f"Building structure based on CT file: {args.build}")
+            with open(args.build, 'r') as file:
+                data = json.load(file)
+                formatted_data = format_tree(data)
+                print_tree(formatted_data, is_root=True, config=config)
+                print("Building structure based on CT file")
+                contin = input("Do you want to continue? (y/n): ")
+                if contin == "y":
+                    print("Continuing")
+                    build_tree(data, os.getcwd())
+                    
+                else:
+                    print("Exiting")
+                    exit()
         if args.verbose:
             print("Verbose mode enabled")
             verbose = True
         if args.export:
             log(f"Exporting to file: {args.export}")
+            log("Copying current directory")
+            directory = os.getcwd()
+            currentcopy = {}
+            rootfolder = get_top_most_folder_name(directory)
+
+            currentcopy[rootfolder] = {}
+
+            for root, dirs, files in safe_os_walk(directory):
+                log(f"Root: {root}")
+                relative_root = os.path.relpath(root, directory)
+                if relative_root == ".":
+                    current_level = currentcopy[rootfolder]
+                else:
+                    parts = relative_root.split(os.sep)
+                    current_level = ensure_dict_structure(currentcopy[rootfolder], parts)
+
+                for dir_name in dirs:
+                    log(f"Directory: {os.path.join(root, dir_name)}")
+                    current_level[dir_name] = {}
+                for file_name in files:
+                    file_nametag, file_extension = os.path.splitext(file_name)
+                    current_level[file_nametag] = remove_dot_from_extension(file_extension)
+                    log(f"File: {os.path.join(root, file_name)}")
+                
+            with open(args.export, 'w') as file:
+                json.dump(currentcopy, file, indent=4)
+            log("Exported to file")
         else:
             if args.directory:
                 log(f"Copying directory: {args.directory}")
