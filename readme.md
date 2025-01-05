@@ -12,7 +12,7 @@ CopyTree is a command-line tool for creating ASCII file trees and replicating fi
 
 ## Installation
 
-To install CopyTree, you have two options:
+To install CopyTree, you can use pip:
 
 
 
