@@ -16,8 +16,6 @@ CopyTree is a command-line tool for creating ASCII file trees and replicating fi
 
 To install CopyTree, you can use pip:
 
-
-
 ### Install via pip
 
 ```sh
@@ -64,6 +62,30 @@ Export the current directory structure to a `.ct` file:
 ```sh
 copytree -e my_structure.ct
 ```
+
+## Configuration
+
+CopyTree uses a configuration file located at `~/.copytree/config.json`. The configuration file allows you to customize the appearance of the ASCII tree and enable pirate-speak mode.
+
+### Default Configuration
+
+```json
+{
+    "folder-prefix": "/",
+    "sub-file-indicator": "├──",
+    "end-cap-indicator": "└──",
+    "indent-space-indicator": "│",
+    "pirate-speak": false
+}
+```
+
+### Configuration Options
+
+- `folder-prefix`: The prefix used for folders in the ASCII tree.
+- `sub-file-indicator`: The indicator used for sub-files in the ASCII tree.
+- `end-cap-indicator`: The indicator used for the end of a branch in the ASCII tree.
+- `indent-space-indicator`: The indicator used for indentation in the ASCII tree.
+- `pirate-speak`: Enable or disable pirate-speak mode for logging messages.
 
 ## Contributing
 
