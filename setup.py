@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='copyTree-cli',
+    name='copytree-cli',  
     version='0.1.0',
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'copytree=copytree.main:main',
-            'ct=copytree.main:main',
+            'copytree=copytree.main:main',  
+            'ct=copytree.main:main',        
         ],
     },
     author='Meepsterton',
@@ -23,6 +23,6 @@ setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        #no dependencies
+        # no dependencies
     ],
 )

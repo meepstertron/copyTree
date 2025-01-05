@@ -28,7 +28,7 @@ def translate_to_pirate(message):
         "Current copy": "This be the current copy, ye savvy?",
         "Timeout reached while walking through": "Arrr, timeout reached while we be walkin' the plank, I mean, through the seas!",
         "Permission error": "Permission denied, ye scurvy pirate! Ye don't have the captain's key!",
-        # Add more translations as needed
+        
     }
 
     for key, value in pirate_dict.items():
@@ -66,7 +66,7 @@ def load_config():
 def create_default_config(config_path):
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
     with open(config_path, 'w') as file:
-        json.dump({"folder-prefix": "/", "sub-file-indicator": "├──", "end-cap-indicator":"└──", "indent-space-indicator": "│", "print-color": False, "pirate-speak": False}, file, indent=4)
+        json.dump({"folder-prefix": "/", "sub-file-indicator": "├──", "end-cap-indicator":"└──", "indent-space-indicator": "│", "pirate-speak": False}, file, indent=4)
 
 def get_top_most_folder_name(path):
 
@@ -85,18 +85,18 @@ def print_tree(data, indent="", is_last=True, is_root=False, config=None):
         for count, (key, value) in enumerate(data.items()):
             is_directory = isinstance(value, dict)
             
-            # Special case for the root directory
+           
             if is_root:
                 message = f"{indent}{config['folder-prefix']}{key}"
                 if pirate:
                     message = translate_to_pirate(message)
-                print(message)  # Root directory without '└──'
+                print(message)  
                 new_indent = indent + " "
             else:
                 if is_directory:
-                    prefix = f"{config['folder-prefix']}{key}"  # Add "/" for directories
+                    prefix = f"{config['folder-prefix']}{key}"  
                 else:
-                    prefix = key  # No "/" for files
+                    prefix = key  
                 
                 if count == len(data) - 1:
                     message = f"{indent}{config['end-cap-indicator']} {prefix}"
