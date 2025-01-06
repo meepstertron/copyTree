@@ -67,7 +67,7 @@ def load_config():
 def create_default_config(config_path):
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
     with open(config_path, 'w') as file:
-        json.dump({"folder-prefix": "/", "sub-file-indicator": "├──", "end-cap-indicator":"└──", "indent-space-indicator": "│", "pirate-speak": False, "color": False, "folder-color": "33", "default-file-color": "42", "file-type-colors": [{"ct": "45,4"}], "root-color": "43"}, file, indent=4)
+        json.dump({"folder-prefix": "/", "sub-file-indicator": "├──", "end-cap-indicator":"└──", "indent-space-indicator": "│", "pirate-speak": False, "color": False, "folder-color": "33", "default-file-color": "32", "file-type-colors": [{"c": "45", "ext": "ct"}], "root-color": "43", "compact": False}, file, indent=4)
 
 def get_top_most_folder_name(path):
 
@@ -102,7 +102,10 @@ def print_tree(data, indent="", is_last=True, is_root=False, config=None):
                 if is_directory:
                     prefix = if_color(config['folder-color'], f"{config['folder-prefix']}{key}") 
                 else:
-                    prefix = key  
+                    file_extension = remove_dot_from_extension(os.path.splitext(key)[1])
+                    file_color = next((item['c'] for item in config['file-type-colors'] if 'ext' in item and item['ext'] == file_extension), config['default-file-color'])
+                    prefix = if_color(file_color, f"{key}")
+                      
                 
                 if count == len(data) - 1:
                     message = f"{indent}{config['end-cap-indicator']} {prefix}"
@@ -263,16 +266,18 @@ def main():
                 
                 
         else:
-            print(if_color("1;32;40", "Copytree CLI"))
             
-            print("                     _______            ")
-            print("                    |__   __|           ")
-            print("   ___ ___  _ __  _   _| |_ __ ___  ___ ")
-            print("  / __/ _ \| '_ \| | | | | '__/ _ \/ _ \\")
-            print(" | (_| (_) | |_) | |_| | | | |  __/  __/")
-            print("  \___\___/| .__/ \__, |_|_|  \___|\___|")
-            print("          | |     __/ |                 ")
-            print(f'          |_|    |___/  {pkg_resources.get_distribution("copytree-cli").version}')
+            if not config["compact"]:
+                print("                     _______            ")
+                print("                    |__   __|           ")
+                print("   ___ ___  _ __  _   _| |_ __ ___  ___ ")
+                print("  / __/ _ \| '_ \| | | | | '__/ _ \/ _ \\")
+                print(" | (_| (_) | |_) | |_| | | | |  __/  __/")
+                print("  \___\___/| .__/ \__, |_|_|  \___|\___|")
+                print("          | |     __/ |                 ")
+                print(f'          |_|    |___/  {pkg_resources.get_distribution("copytree-cli").version}')
+            else:
+                print(if_color("1;32;40", "Copytree CLI") + " - " +if_color("1;33;40", pkg_resources.get_distribution("copytree-cli").version ))
             if args.directory:
                 log(f"Exporting directory: {args.directory}")
                 directory = args.directory
