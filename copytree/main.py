@@ -39,8 +39,8 @@ def translate_to_pirate(message):
 def build_tree(obj, path):
     for key, value in obj.items():
         if isinstance(value, str):
-            with open(os.path.join(path, key), 'w') as file:
-                file.write(value)
+            with open(os.path.join(path, key+value), 'w') as file:
+                file.write("")
        
         if isinstance(value, dict):
             new_path = os.path.join(path, key)
