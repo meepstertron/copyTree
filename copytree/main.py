@@ -3,6 +3,7 @@ import os
 import json
 import errno
 import threading
+import pkg_resources
 
 
 pirate = False
@@ -66,7 +67,7 @@ def load_config():
 def create_default_config(config_path):
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
     with open(config_path, 'w') as file:
-        json.dump({"folder-prefix": "/", "sub-file-indicator": "├──", "end-cap-indicator":"└──", "indent-space-indicator": "│", "pirate-speak": False}, file, indent=4)
+        json.dump({"folder-prefix": "/", "sub-file-indicator": "├──", "end-cap-indicator":"└──", "indent-space-indicator": "│", "pirate-speak": False, "color": False, "folder-color": "33", "default-file-color": "42", "file-type-colors": [{"ct": "45,4"}], "root-color": "43"}, file, indent=4)
 
 def get_top_most_folder_name(path):
 
@@ -80,6 +81,11 @@ def get_top_most_folder_name(path):
 def remove_dot_from_extension(extension):
     return extension[1:] if extension.startswith('.') else extension
 
+def if_color(color, text):
+    if not config["color"]:
+        return text
+    return f"\033[{color}m{text}\033[0m"
+
 def print_tree(data, indent="", is_last=True, is_root=False, config=None):
     if isinstance(data, dict):
         for count, (key, value) in enumerate(data.items()):
@@ -87,14 +93,14 @@ def print_tree(data, indent="", is_last=True, is_root=False, config=None):
             
            
             if is_root:
-                message = f"{indent}{config['folder-prefix']}{key}"
+                message = f"{indent}{if_color(config['root-color'], config['folder-prefix'] + key)}"
                 if pirate:
                     message = translate_to_pirate(message)
                 print(message)  
                 new_indent = indent + " "
             else:
                 if is_directory:
-                    prefix = f"{config['folder-prefix']}{key}"  
+                    prefix = if_color(config['folder-color'], f"{config['folder-prefix']}{key}") 
                 else:
                     prefix = key  
                 
@@ -156,7 +162,8 @@ def safe_os_walk(directory, timeout=10):
 
 def main():
     global pirate
-    global verbose  
+    global verbose
+    global config
     
     parser = argparse.ArgumentParser(description='Copytree command-line tool')
     parser.add_argument('command', nargs='?', choices=['copytree', 'ct'], default='copytree', help='The command to run')
@@ -165,6 +172,8 @@ def main():
     parser.add_argument('-e', '--export', nargs='?', const='export.ct', help='Export the structure to a file (default: export.ct)')
     parser.add_argument('-d', '--directory', help='directory to copy')
     parser.add_argument('-b', '--build', help='Build structure based on CT file')
+    
+    # parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help='Show this help message and exit')
 
     args = parser.parse_args()
     config_path = os.path.expanduser("~") + "/.copytree/config.json"
@@ -183,6 +192,10 @@ def main():
             log("config file created, setting default values")
             with open(os.path.expanduser("~") + "/.copytree/config.json", 'w') as file:
                 json.dump({"folder-prefix": "/", "sub-file-indicator": "├──", "end-cap-indicator":"└──",}, file, indent=4)
+                
+
+            
+            
         if args.build:
             log(f"Building structure based on CT file: {args.build}")
             with open(args.build, 'r') as file:
@@ -198,13 +211,25 @@ def main():
                 else:
                     print("Exiting")
                     exit()
+                    
+                    
+                    
         if args.verbose:
             print("Verbose mode enabled")
             verbose = True
+            
+            
+            
+            
         if args.export:
             log(f"Exporting to file: {args.export}")
-            log("Copying current directory")
-            directory = os.getcwd()
+            
+            if args.directory:
+                log(f"Exporting directory: {args.directory}")
+                directory = args.directory
+            else:
+                log("Exporting current directory")
+                directory = os.getcwd()
             currentcopy = {}
             rootfolder = get_top_most_folder_name(directory)
 
@@ -230,42 +255,59 @@ def main():
             with open(args.export, 'w') as file:
                 json.dump(currentcopy, file, indent=4)
             log("Exported to file")
+            
+            
+            
+      
+            
+                
+                
         else:
+            print(if_color("1;32;40", "Copytree CLI"))
+            
+            print("                     _______            ")
+            print("                    |__   __|           ")
+            print("   ___ ___  _ __  _   _| |_ __ ___  ___ ")
+            print("  / __/ _ \| '_ \| | | | | '__/ _ \/ _ \\")
+            print(" | (_| (_) | |_) | |_| | | | |  __/  __/")
+            print("  \___\___/| .__/ \__, |_|_|  \___|\___|")
+            print("          | |     __/ |                 ")
+            print(f'          |_|    |___/  {pkg_resources.get_distribution("copytree-cli").version}')
             if args.directory:
-                log(f"Copying directory: {args.directory}")
+                log(f"Exporting directory: {args.directory}")
                 directory = args.directory
             else:
-                log("Copying current directory")
+                log("Exporting current directory")
                 directory = os.getcwd()
-                currentcopy = {}
-                rootfolder = get_top_most_folder_name(directory)
+            currentcopy = {}
+            rootfolder = get_top_most_folder_name(directory)
 
-                currentcopy[rootfolder] = {}
+            currentcopy[rootfolder] = {}
 
-                for root, dirs, files in safe_os_walk(directory):
-                    log(f"Root: {root}")
-                    relative_root = os.path.relpath(root, directory)
-                    if relative_root == ".":
-                        current_level = currentcopy[rootfolder]
-                    else:
-                        parts = relative_root.split(os.sep)
-                        current_level = ensure_dict_structure(currentcopy[rootfolder], parts)
+            for root, dirs, files in safe_os_walk(directory):
+                log(f"Root: {root}")
+                relative_root = os.path.relpath(root, directory)
+                if relative_root == ".":
+                    current_level = currentcopy[rootfolder]
+                else:
+                    parts = relative_root.split(os.sep)
+                    current_level = ensure_dict_structure(currentcopy[rootfolder], parts)
 
-                    for dir_name in dirs:
-                        log(f"Directory: {os.path.join(root, dir_name)}")
-                        current_level[dir_name] = {}
-                    for file_name in files:
-                        file_nametag, file_extension = os.path.splitext(file_name)
-                        current_level[file_nametag] = remove_dot_from_extension(file_extension)
-                        log(f"File: {os.path.join(root, file_name)}")
+                for dir_name in dirs:
+                    log(f"Directory: {os.path.join(root, dir_name)}")
+                    current_level[dir_name] = {}
+                for file_name in files:
+                    file_nametag, file_extension = os.path.splitext(file_name)
+                    current_level[file_nametag] = remove_dot_from_extension(file_extension)
+                    log(f"File: {os.path.join(root, file_name)}")
 
-                log("Current copy:")
-                log(currentcopy)
+            log("Current copy:")
+            log(currentcopy)
 
-                log(json.dumps(currentcopy, indent=4))
+            log(json.dumps(currentcopy, indent=4))
 
-                formatted_data = format_tree(currentcopy)
-                print_tree(formatted_data, is_root=True, config=config)
+            formatted_data = format_tree(currentcopy)
+            print_tree(formatted_data, is_root=True, config=config)
 
 if __name__ == "__main__":
     main()
