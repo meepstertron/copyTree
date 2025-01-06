@@ -4,13 +4,18 @@
 
 CopyTree is a command-line tool for creating ASCII file trees and replicating file trees using `.ct` files. It allows you to easily visualize and duplicate directory structures.
 
+## Why Use CopyTree?
+
+Unlike standard file copying methods, CopyTree provides a visual representation of your directory structure in ASCII format. This makes it easier to understand and manage complex directory hierarchies. Additionally, CopyTree allows you to export and import directory structures using `.ct` files, enabling easy replication and sharing of directory layouts. In comparison to `ls` copytree also lists subfolders and subfiles which can be handy in some usecases
+
 ## Features
 
 - Generate ASCII representations of directory trees
 - Replicate directory structures using `.ct` files
 - Export directory structures to `.ct` files
 - Enable pirate-speak mode for fun logging messages
-- uhh copytree = cool
+- Customizable appearance of the ASCII tree
+- Color-coded output for better readability
 
 ## Installation
 
@@ -72,10 +77,21 @@ CopyTree uses a configuration file located at `~/.copytree/config.json`. The con
 ```json
 {
     "folder-prefix": "/",
-    "sub-file-indicator": "├──",
-    "end-cap-indicator": "└──",
-    "indent-space-indicator": "│",
-    "pirate-speak": false
+    "sub-file-indicator": "\u251c\u2500\u2500",
+    "end-cap-indicator": "\u2514\u2500\u2500",
+    "indent-space-indicator": "\u2502",
+    "pirate-speak": false,
+    "color": false,
+    "folder-color": "33",
+    "default-file-color": "32",
+    "file-type-colors": [
+        {
+            "c": "45",
+            "ext": "ct"
+        }
+    ],
+    "root-color": "43",
+    "compact": false
 }
 ```
 
@@ -86,6 +102,12 @@ CopyTree uses a configuration file located at `~/.copytree/config.json`. The con
 - `end-cap-indicator`: The indicator used for the end of a branch in the ASCII tree.
 - `indent-space-indicator`: The indicator used for indentation in the ASCII tree.
 - `pirate-speak`: Enable or disable pirate-speak mode for logging messages.
+- `color`: Enable or disable color-coded output.
+- `folder-color`: Color code for folders.
+- `default-file-color`: Default color code for files.
+- `file-type-colors`: List of color codes for specific file extensions.
+- `root-color`: Color code for the root directory.
+- `compact`: Enable or disable compact mode for the Logo and info
 
 ## Contributing
 
